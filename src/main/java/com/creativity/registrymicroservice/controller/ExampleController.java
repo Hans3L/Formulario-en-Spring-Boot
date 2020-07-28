@@ -1,10 +1,9 @@
 package com.creativity.registrymicroservice.controller;
 
+import com.creativity.registrymicroservice.model.Person;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
@@ -25,5 +24,16 @@ public class ExampleController {
         return mav;
     }
 
+    @GetMapping("/showform")
+    public String getform(Model model){
+        model.addAttribute("person", new Person());
+        return "form";
+    }
 
+    @PostMapping("/addperson")
+    public ModelAndView addPerson(@ModelAttribute("person") Person person){
+        ModelAndView mav = new ModelAndView("result");
+        mav.addObject("person",person);
+        return mav;
+    }
 }
