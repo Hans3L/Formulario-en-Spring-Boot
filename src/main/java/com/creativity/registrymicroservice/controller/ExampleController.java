@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
 @RequestMapping("/v2")
@@ -35,5 +36,15 @@ public class ExampleController {
         ModelAndView mav = new ModelAndView("result");
         mav.addObject("person",person);
         return mav;
+    }
+
+    //TODO @GetMapping("/")
+    //TODO public String redirectOne(){
+    //TODO    return "redirect:/v2/showform";
+    //TODO }
+
+    @GetMapping("/")
+    public RedirectView redirect(){
+        return new RedirectView("/v2/showform");
     }
 }
