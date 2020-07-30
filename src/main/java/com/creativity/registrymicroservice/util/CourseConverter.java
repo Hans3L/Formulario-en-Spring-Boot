@@ -1,9 +1,10 @@
 package com.creativity.registrymicroservice.util;
 
-
 import com.creativity.registrymicroservice.dto.CourseDto;
 import com.creativity.registrymicroservice.entity.CourseEntity;
+import org.springframework.stereotype.Component;
 
+@Component("courseConverter")
 public class CourseConverter {
 
     public CourseEntity dtoToCourseEntity(CourseDto courseDto){
