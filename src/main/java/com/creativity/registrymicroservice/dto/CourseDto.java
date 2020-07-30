@@ -1,48 +1,29 @@
-package com.creativity.registrymicroservice.entity;
+package com.creativity.registrymicroservice.dto;
 
-import javax.persistence.*;
+
 import java.io.Serializable;
 
-@Entity
-@Table(name = "tbl_course")
-public class CourseEntity implements Serializable {
+public class CourseDto implements Serializable {
 
-    private static final long serialVersionUID = 1338085848461691030L;
+    private static final long serialVersionUID = 2663917142757924812L;
 
-    @Id
-    @GeneratedValue
-    @Column(name = "CourseId")
-    private int id;
-
-    @Column(name = "CourseName")
     private String name;
 
-    @Column(name = "Description")
     private String description;
 
-    @Column(name = "Price")
     private int price;
 
-    @Column(name = "Hour")
     private int hour;
 
-    public CourseEntity() {
+    public CourseDto(){
 
     }
-    public CourseEntity(int id, String name, String description, int price, int hour){
-        this.id = id;
+
+    public CourseDto(String name, String description, int price, int hour) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.hour = hour;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getName() {
