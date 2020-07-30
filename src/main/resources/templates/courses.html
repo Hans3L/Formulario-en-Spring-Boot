@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Fomulario MVC</title>
+</head>
+<body>
+<table>
+    <thead>
+    <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Precio</th>
+        <th>Horas</th>
+    </tr>
+    </thead>
+    <tbody>
+        <tr th:each="course : ${courses}">
+            <th><span th:text="${course.name}"></span></th>
+            <th><span th:text="${course.description}"></span></th>
+            <th><span th:text="${course.price}"></span></th>
+            <th><span th:text="${course.hour}"></span></th>
+        </tr>
+    </tbody>
+</table>
+<!--Se crea un objeto course para referenciarlo con los fields-->
+<form action="#" th:action="@{/course/add-course}" th:object="${course}" method="post">
+    <p>Nombre: <input type="text" th:field="*{name}"/></p>
+    <p>Descripción: <input type="text" th:field="*{description}"/></p>
+    <p>Precio: <input type="number" th:field="*{price}"/></p>
+    <p>Horas: <input type="number" th:field="*{hour}"/></p>
+    <p><input type="submit" placeholder="Enviar"/></p>
+</form>
+</body>
+</html>
