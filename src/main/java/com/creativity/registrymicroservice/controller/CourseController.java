@@ -31,9 +31,14 @@ public class CourseController {
         ModelAndView mav = new ModelAndView(COURSE_VIEW);
         //Se crea un nuevo atributo con un contructor vacio para parsear en los objetos de thymeleaf
         CourseDto courseDto = new CourseDto();
-        mav.addObject("course", courseConverter.dtoToCourseEntity(courseDto));
-        mav.addObject(COURSE_VIEW,courseService.listAllCourses());
-        return mav;
+        try{
+            mav.addObject("course", courseConverter.dtoToCourseEntity(courseDto));
+            mav.addObject(COURSE_VIEW,courseService.listAllCourses());
+            return mav;
+        }catch (Exception ex){
+            throw new ResponseStatusException(
+                    HttpStatus.EXPECTATION_FAILED, "Error Internal", ex);
+        }
     }
 
     @PostMapping("/add-course")
