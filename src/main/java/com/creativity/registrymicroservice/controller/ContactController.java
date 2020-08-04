@@ -18,6 +18,7 @@ import static com.creativity.registrymicroservice.util.Contants.CONTACTS;
 import static com.creativity.registrymicroservice.util.Contants.CONTACT_FORM;
 
 @Controller
+@PreAuthorize("hasRole('ROLE_ADMIN') and hasRole('ROLE_USER')")
 @RequestMapping("/contact")
 public class ContactController {
 
@@ -32,7 +33,7 @@ public class ContactController {
         return CONTACTS;
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @GetMapping("/contact-form")
     public String redirectContactForm(@RequestParam(name = "id", required= false) int id, //el id no puede ser null por required
             Model model){
@@ -43,7 +44,7 @@ public class ContactController {
         model.addAttribute("contactDto", contactDto);
         return CONTACT_FORM;
     }
-
+    @PreAuthorize("permiteAll()")
     @PostMapping("/add-contact")
     public String addContact(@ModelAttribute(name = "contactDto") ContactDto contactDto, Model model){
         LOGGER.info("ENTERING METHOD: addContact() -- PARAMS: ContactDto: " + contactDto.toString() );
