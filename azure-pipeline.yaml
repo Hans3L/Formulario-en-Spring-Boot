@@ -75,14 +75,14 @@ jobs:
   - script: |
       docker images
 
-  - task: Docker@2
-    displayName: 'Logueando a Container Registry Docker'
-    condition: 'succeeded()'
-    inputs:
-      command: login
-      #containerRegistry: $(containerRegistry)
-  - script: |
-       #echo Saltamos este login de Docker Hub
+#  - task: Docker@2
+#    displayName: 'Logueando a Container Registry Docker'
+#    condition: 'succeeded()'
+#    inputs:
+#      command: login
+#      #containerRegistry: $(containerRegistry)
+#  - script: |
+#       #echo Saltamos este login de Docker Hub
 
   - task: Bash@3
     displayName: 'Logueando a Container Registry Bluemix'
