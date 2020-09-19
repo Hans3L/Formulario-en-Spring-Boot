@@ -1,0 +1,202 @@
+# Starter pipeline
+# Author H4ns3L
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+##################################################################
+  # containerRegistry: '{{ containerRegistry }}'
+  # imageRepository: '{{ imageRepository }}'
+  # dockerfilePath: '{{ dockerfilePath }}'
+  # nameSpaceContainerRegistry: '{{ nameSpaceContainerRegistry }}'
+  # artifact_id: '{{ artifact_id }}'
+  # artifact_version: '{{ artifact_version }}'
+  # containerName: '{{ containerName }}'
+  # ArtifactName: '{{ drop }}'
+  # hostCRegistry: '{{ hostCRegistry }}'
+  # apiKeyCRBLUEMIX: '{{ apiKeyCRBLUEMIX }}'
+  # userBLUEMIX: '{{ userBLUEMIX }}'
+  # iamapikey: '{{ iamapikey }}'
+  # HEROKU_APP_NAME: '{{ HEROKU_APP_NAME }}'
+  # HEROKU_API_KEY: '{{ HEROKU_API_KEY }}'
+  tag: ''
+#################################################################
+jobs:
+
+- job: CreateImageCompilePom
+  displayName: Comienzo del jobs
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: Maven@3
+    displayName: 'Compilacion con Maven al pom'
+    inputs:
+      mavenPomFile: 'pom.xml'
+      javaHomeOption: 'JDKVersion'
+      mavenOpts: -Xmx1024m
+      jdkVersionOption: '1.8'
+      mavenSetM2Home: false
+      pmdAnalysisEnabled: false
+      #testResultsFiles: '**/surefire-reports/TEST-*.xml'
+      findbugsAnalysisEnabled: false
+      goals: 'package'
+
+  - task: Docker@2
+    displayName: 'Compilar el DockerFile'
+    condition: 'succeeded()'
+    inputs:
+      repository: ''
+      command: build
+      dockerfile: $(dockerfilePath)
+      buildContext: '**'
+      tags: ''
+      arguments:  --build-arg artifact_id=$(artifact_id) --build-arg artifact_version=$(artifact_version) -t $(artifact_id):$(artifact_version)
+      addPipelineData: true
+
+  - task: Docker@1
+    displayName: 'Tageo de imagen creada por Dockerfile'
+    condition: 'succeeded()'
+    inputs:
+      command: Tag image
+      dockerRegistryEndpoint: $(containerRegistry)
+      arguments: '$(hostCRegistry)/$(nameSpaceContainerRegistry)/$(artifact_id):$(artifact_version)'
+      imageName: $(artifact_id):$(artifact_version)
+      pushMultipleImages: false
+      tagMultipleImages: false
+  - script: |
+      docker images
+  - task: Docker@2
+    displayName: 'Logueando a Container Registry Docker'
+    condition: 'succeeded()'
+    inputs:
+      command: login
+      containerRegistry: $(containerRegistry)
+
+  - task: Bash@3
+    displayName: 'Logueando a Container Registry Bluemix'
+    condition: 'succeeded()'
+    inputs:
+      targetType: 'inline'
+      filePath: ''
+      arguments: ''
+      workingDirectory: ''
+      failOnStderr: false
+      noProfile: true
+      noRc: true
+  - script: |
+      curl -sL https://ibm.biz/idt-installer | bash
+      ibmcloud config --check-version=false  && ibmcloud login -a https://cloud.ibm.com --apikey $(apiKeyCRBLUEMIX)  -r us-south -u $(userBLUEMIX) && ibmcloud cr login
+      #&& docker push $(hostCRegistry)/$(nameSpaceContainerRegistry)/$(artifact_id):$(artifact_version)
+      echo Push to Bluemix
+      
+  - task: Docker@2
+    displayName: 'Empuje imagen tageada a Docker Registry'
+    condition: 'succeeded()'
+    inputs:
+      containerRegistry: $(containerRegistry)
+      repository: '$(hostCRegistry)/$(nameSpaceContainerRegistry)/$(artifact_id):$(artifact_version)'
+      command: push
+      addPipelineData: true
+      tags: ''
+      arguments: ''
+  
+  - task: Docker@1
+    displayName: 'Correr contenedor'
+    condition: 'succeeded()'
+    inputs:
+      dockerRegistryEndpoint: $(containerRegistry)
+      command: 'Run an image'
+      dockerFile: '$(dockerfilePath)'
+      arguments: '--name $(containerName) -p 8080:8080 -p 9990:9990 -it $(artifact_id):$(artifact_version) /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0'
+      pushMultipleImages: false
+      tagMultipleImages: false
+      imageName: '$(artifact_id):$(artifact_version)'
+      buildContext: '**'
+      containerName: '$(containerName)'
+      ports: ''
+      runInBackground: true
+      memoryLimit: ''
+  - script: |
+      echo Listar los contenedores
+      docker ps -a
+      echo Inspeccionando la IP
+      docker inspect -f '{{ .NetworkSettings.IPAddress }}' $(containerName)
+      cat /etc/hosts
+  - task: CopyFiles@2
+    displayName: 'Copiar archivos a: $(build.artifactstagingdirectory) desde $(system.defaultworkingdirectory)'
+    condition: 'succeeded()'
+    inputs:
+      SourceFolder: '$(system.defaultworkingdirectory)'
+      Contents: '**/*.war'
+      TargetFolder: '$(build.artifactstagingdirectory)'
+      CleanTargetFolder: false
+      OverWrite: false
+      flattenFolders: false
+      preserveTimestamp: false
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publicar Artefacto: $(artifact_id):$(artifact_version)'
+    condition: 'succeeded()'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: '$(ArtifactName)'
+      ArtifactType: 'Container'
+      TargetPath: ''
+      Parallel: false
+      ParallelCount: 8
+      FileCopyOptions: ''
+  
+  - task: Docker@2
+    displayName: 'Saliendo de Docker Hub'
+    condition: 'succeeded()'
+    inputs:
+      containerRegistry: $(containerRegistry)
+      command: logout
+      buildContext: '**'
+      tags: ''
+      arguments: ''
+      addPipelineData: true
+
+  - task: PublishTestResults@2
+    displayName: 'Publicando resultados de la prueba **/TEST-*.xml'
+    condition: 'succeeded()'
+    inputs:
+      testRunner: 'JUnit'
+      testResultsFiles: '**/TEST-*.xml'
+      searchFolder: '$(System.DefaultWorkingDirectory)'
+      mergeTestResults: false
+      failTaskOnFailedTests: false
+      testRunTitle: ''
+      platform: ''
+      configuration: ''
+      publishRunAttachments: true
+  
+  - task: PowerShell@2
+    displayName: 'PowerShell script deploy Heroku'
+    condition: 'succeeded()'
+    inputs:
+      targetType: 'inline'
+      filePath: ''
+      arguments: ''
+      errorActionPreference: stop
+      failOnStderr: false
+      ignoreLASTEXITCODE: false
+      pwsh: false
+      workingDirectory: ''
+  - script: |
+      echo Branch en cola de compilación
+      echo $(Build.SourceBranchName)
+      git checkout $(Build.SourceBranchName)
+      #heroku login
+      #git remote add heroku https://heroku:$(HEROKU_API_KEY)@git.heroku.com/$(HEROKU_APP_NAME).git
+      #git push heroku $(Build.SourceBranchName)
+      git push https://heroku:$(HEROKU_API_KEY)@git.heroku.com/$(HEROKU_APP_NAME).git HEAD
