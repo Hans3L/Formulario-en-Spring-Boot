@@ -11,7 +11,7 @@
     <groupId>com.creativity</groupId>
     <artifactId>form-microservice</artifactId>
     <version>1.1</version>
-    <name>registry-microservice</name>
+    <name>form-microservice</name>
     <description>Plantilla de registro</description>
 
     <properties>
