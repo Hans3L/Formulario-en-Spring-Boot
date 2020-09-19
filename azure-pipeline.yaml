@@ -67,7 +67,7 @@ jobs:
     condition: 'succeeded()'
     inputs:
       command: Tag image
-      dockerRegistryEndpoint: $(containerRegistry)
+      #dockerRegistryEndpoint: $(containerRegistry)
       arguments: '$(hostCRegistry)/$(nameSpaceContainerRegistry)/$(artifact_id):$(artifact_version)'
       imageName: $(artifact_id):$(artifact_version)
       pushMultipleImages: false
@@ -77,10 +77,10 @@ jobs:
   - task: Docker@2
     displayName: 'Logueando a Container Registry Docker'
     condition: 'succeeded()'
-    inputs:
-      command: login
-      containerRegistry: $(containerRegistry)
-
+    #inputs:
+      #command: login
+      #containerRegistry: $(containerRegistry)
+  - script: echo Saltamos este login de Docker Hub
   - task: Bash@3
     displayName: 'Logueando a Container Registry Bluemix'
     condition: 'succeeded()'
@@ -102,7 +102,7 @@ jobs:
     displayName: 'Empuje imagen tageada a Docker Registry'
     condition: 'succeeded()'
     inputs:
-      containerRegistry: $(containerRegistry)
+      #containerRegistry: $(containerRegistry)
       repository: '$(hostCRegistry)/$(nameSpaceContainerRegistry)/$(artifact_id):$(artifact_version)'
       command: push
       addPipelineData: true
@@ -113,7 +113,7 @@ jobs:
     displayName: 'Correr contenedor'
     condition: 'succeeded()'
     inputs:
-      dockerRegistryEndpoint: $(containerRegistry)
+      #dockerRegistryEndpoint: $(containerRegistry)
       command: 'Run an image'
       dockerFile: '$(dockerfilePath)'
       arguments: '--name $(containerName) -p 8080:8080 -p 9990:9990 -it $(artifact_id):$(artifact_version) /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0'
@@ -159,12 +159,13 @@ jobs:
     displayName: 'Saliendo de Docker Hub'
     condition: 'succeeded()'
     inputs:
-      containerRegistry: $(containerRegistry)
+      #containerRegistry: $(containerRegistry)
       command: logout
       buildContext: '**'
       tags: ''
       arguments: ''
       addPipelineData: true
+  - script: echo Saltamos este step de logout docker Hub
 
   - task: PublishTestResults@2
     displayName: 'Publicando resultados de la prueba **/TEST-*.xml'
