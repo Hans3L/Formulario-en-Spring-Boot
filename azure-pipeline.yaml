@@ -100,17 +100,44 @@ jobs:
       ibmcloud config --check-version=false  && ibmcloud login -a https://cloud.ibm.com --apikey $(apiKeyCRBLUEMIX)  -r us-south -u $(userBLUEMIX) && ibmcloud cr login
       #&& docker push $(hostCRegistry)/$(nameSpaceContainerRegistry)/$(artifact_id):$(artifact_version)
       echo Push to Bluemix
-      
+  - task: Bash@3
+    displayName: 'Logueando a Container Registry azure'
+    condition: 'succeeded()'
+    inputs:
+      targetType: 'inline'
+      filePath: ''
+      arguments: ''
+      workingDirectory: ''
+      failOnStderr: false
+      noProfile: true
+      noRc: true
+  - script: |
+      curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+      docker login  acrsandboxjbriceno.azurecr.io -u $(USER_ACR) -p $(PASS_ACR)
+      #&& docker push $(hostCRegistry)/$(nameSpaceContainerRegistry)/$(artifact_id):$(artifact_version)
+      echo Push to azure
+
   - task: Docker@2
     displayName: 'Empuje imagen tageada a Docker Registry'
     condition: 'succeeded()'
     inputs:
       #containerRegistry: $(containerRegistry)
-      repository: '$(hostCRegistry)/$(nameSpaceContainerRegistry)/$(artifact_id):$(artifact_version)'
+      repository: 'acrsandboxjbriceno.azurecr.io/$(artifact_id):$(artifact_version)'
       command: push
       addPipelineData: true
       tags: ''
       arguments: ''
+      
+#  - task: Docker@2
+#    displayName: 'Empuje imagen tageada a Docker Registry'
+#    condition: 'succeeded()'
+#    inputs:
+      #containerRegistry: $(containerRegistry)
+#      repository: '$(hostCRegistry)/$(nameSpaceContainerRegistry)/$(artifact_id):$(artifact_version)'
+#      command: push
+#      addPipelineData: true
+#      tags: ''
+#      arguments: ''
   
   - task: Docker@1
     displayName: 'Correr contenedor'
