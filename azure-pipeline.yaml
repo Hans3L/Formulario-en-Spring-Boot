@@ -68,7 +68,8 @@ jobs:
     inputs:
       command: Tag image
       #dockerRegistryEndpoint: $(containerRegistry)
-      arguments: '$(hostCRegistry)/$(nameSpaceContainerRegistry)/$(artifact_id):$(artifact_version)'
+      #arguments: '$(hostCRegistry)/$(nameSpaceContainerRegistry)/$(artifact_id):$(artifact_version)'
+      arguments: 'acrsandboxjbriceno.azurecr.io/$(artifact_id):$(artifact_version)'
       imageName: $(artifact_id):$(artifact_version)
       pushMultipleImages: false
       tagMultipleImages: false
